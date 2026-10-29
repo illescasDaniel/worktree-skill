@@ -1,8 +1,8 @@
 # worktree-skill
 
 An agent skill for the whole life of an isolated git worktree: create it, **set up its environment automatically**
-(virtualenv, `node_modules`, build output), apply it back into the main checkout behind the project's quality gate,
-and delete it. A fresh worktree contains only tracked files, so without setup the first test run fails; the skill tells
+(virtualenv, `node_modules`, build output), apply it back into its parent branch behind the project's quality gate,
+save it, and delete it. A fresh worktree contains only tracked files, so without setup the first test run fails; the skill tells
 the agent to do that setup on its own, following whatever the project documents in `AGENTS.md`, `CLAUDE.md` or the
 README (often a language-specific script), and to fall back to copying or reinstalling from the lockfile.
 
@@ -11,12 +11,12 @@ agent that loads skills.
 
 ## How it works
 
-| Mode | What the agent does |
+| Command | What the agent does |
 |---|---|
-| Create | `git worktree add -b` from the current HEAD, then sets up the environment without being asked |
-| Apply | Commits pending work, merges into the main checkout, resolves conflicts, runs the quality gate |
-| Delete | Moves out, removes the worktree and its generated branch, tolerates editor file locks |
-| Save changes | Commits the task's files and pushes, only when asked |
+| `/worktree create` | `git worktree add -b` from the current branch, records that branch as the parent, then sets up the environment without being asked |
+| `/worktree save` | Commits the task's files on the worktree branch; pushes only when asked |
+| `/worktree apply` | Saves pending work, merges into the recorded parent branch (never a hard-coded main), resolves conflicts, runs the quality gate, then offers to delete |
+| `/worktree delete` | Moves out, removes the worktree and its generated branch, tolerates editor file locks |
 
 To make setup reliable, document it once in your project, for example a "Worktree dependencies" section in `AGENTS.md`
 naming the script or commands to run. The skill looks there first.
