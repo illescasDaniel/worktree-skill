@@ -8,6 +8,8 @@ Manage an isolated Git worktree through creation, setup, saving, applying and de
 
 ## How it works
 
+<img alt="Worktree workflow: create, save, apply and delete" src="assets/infographic.png" height="350">
+
 | Step | What happens |
 | --- | --- |
 | Create | Make a worktree from the current branch and set up dependencies |
