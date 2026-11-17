@@ -1,51 +1,42 @@
-# worktree-skill
+<p align="center"><img src="assets/icon.svg" alt="worktree icon" width="96"></p>
 
-An agent skill for the whole life of an isolated git worktree: create it, **set up its environment automatically**
-(virtualenv, `node_modules`, build output), apply it back into its parent branch behind the project's quality gate,
-save it, and delete it. A fresh worktree contains only tracked files, so without setup the first test run fails; the skill tells
-the agent to do that setup on its own, following whatever the project documents in `AGENTS.md`, `CLAUDE.md` or the
-README (often a language-specific script), and to fall back to copying or reinstalling from the lockfile.
+# worktree
 
-It is an [Agent Skill](https://agentskills.io) (a single `SKILL.md`), so it works in Claude Code, Cursor and any other
-agent that loads skills.
+[MIT](LICENSE)
+
+Manage an isolated Git worktree through creation, setup, saving, applying and deletion.
 
 ## How it works
 
-| Command | What the agent does |
-|---|---|
-| `/worktree create` | `git worktree add -b` from the current branch, records that branch as the parent, then sets up the environment without being asked |
-| `/worktree save` | Commits the task's files on the worktree branch; pushes only when asked |
-| `/worktree apply` | Saves pending work, merges into the recorded parent branch (never a hard-coded main), resolves conflicts, runs the quality gate, then offers to delete |
-| `/worktree delete` | Moves out, removes the worktree and its generated branch, tolerates editor file locks |
+| Step | What happens |
+| --- | --- |
+| Create | Make a worktree from the current branch and set up dependencies |
+| Save | Commit task work; push only when requested |
+| Apply | Merge into its recorded parent and run checks |
+| Delete | Remove the worktree after approval |
 
-To make setup reliable, document it once in your project, for example a "Worktree dependencies" section in `AGENTS.md`
-naming the script or commands to run. The skill looks there first.
-
-## Install
-
-### Any agent: the `skills` CLI
+## Quick start
 
 ```bash
 npx skills add illescasDaniel/worktree-skill
 ```
 
-It asks which agents to install for and whether to install into the current project or globally. Non-interactive:
-`npx skills add illescasDaniel/worktree-skill -a claude-code -y`, plus `-g` for global.
+For manual installation, details and limitations, see the [guide](docs/guide.md).
 
-### By hand
+## Requirements and limits
 
-Copy the `skills/worktree` folder into your agent's skills directory.
+Git 2.22 or newer; environment setup depends on your project. Agent instructions are conventions, not sandbox boundaries.
 
-| | Project (shared with your team) | All your projects |
-|---|---|---|
-| Claude Code | `.claude/skills/worktree/` | `~/.claude/skills/worktree/` |
-| Cursor | `.cursor/skills/worktree/` | `~/.cursor/skills/worktree/` |
+## Evaluation
 
-## Contributing
+[![SkillEvaluator quality A 97.0; keyless security low risk](assets/evaluation.svg)](docs/evaluation.md)
 
-Issues and pull requests are welcome. The skill is deliberately short: if a change makes `SKILL.md` longer, it should
-earn it.
+SkillEvaluator 0.9.0 gave **A, 97.0/100** on the evaluated working tree. Tier 1 passed. The security scanner reported low risk, with a caution recommendation. Static heuristics do not measure agent performance. [Evaluation details](docs/evaluation.md).
+
+## Tests
+
+The skill contains instructions rather than scripts. Its Git commands were exercised in a temporary repository; live agent behavior was not evaluated.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+[MIT](LICENSE).

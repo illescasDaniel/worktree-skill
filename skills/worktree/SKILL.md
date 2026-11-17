@@ -1,17 +1,27 @@
 ---
 name: worktree
-description: "Isolated git worktrees for agent tasks, with four modes: `/worktree create` (new worktree from the current branch, environment set up automatically), `/worktree save` (commit the task's changes on the worktree branch), `/worktree apply` (merge the worktree branch into the parent branch it was created from), `/worktree delete` (remove the worktree and its branch). Use when asked to work in a new worktree, save, apply or merge a worktree back, or delete one; also when you find yourself in a fresh linked worktree whose dependencies are missing."
+description: "Create, save, apply (merge back into the parent branch) and delete isolated git worktrees for agent tasks, setting up each new worktree's environment automatically. Use when asked to work in a new worktree, save a worktree's changes, apply or merge a worktree back, or delete one, and when a fresh linked worktree is missing its dependencies. Not for ordinary branch work in the main checkout."
+license: MIT
+metadata:
+  author: Daniel Illescas Romero <illescas.daniel@protonmail.com>
+  version: "1.0.0"
+  tags: [git, worktree, branches, isolation]
 ---
 
 # Worktree
 
-Work on a task in an isolated checkout, land it on the branch it came from, then remove it. Invoked as
-`/worktree <create|save|apply|delete>`; without an argument (or in an agent with no slash arguments) infer the mode
-from the request, and ask if it is unclear. Do only the mode asked for: Create never merges, Save never pushes, Apply
-never deletes, Delete never merges.
+## Purpose
 
-Detect where you are first: `git rev-parse --show-toplevel`, `git worktree list`. The **main checkout** is the first
-entry of `git worktree list`; a **linked worktree** is any other.
+Work on a task in an isolated checkout, land it on the branch it came from, then remove it.
+
+## Usage
+
+Invoked as `/worktree <create|save|apply|delete>`; without an argument (or in an agent with no slash arguments) infer
+the mode from the request, and ask if it is unclear. Do only the mode asked for: Create never merges, Save never pushes,
+Apply never deletes, Delete never merges.
+
+First run `git rev-parse --show-toplevel` and `git worktree list` to see where you are. The **main checkout** is the
+first entry of `git worktree list`; a **linked worktree** is any other.
 
 ## Create
 
@@ -27,8 +37,8 @@ entry of `git worktree list`; a **linked worktree** is any other.
    untracked-but-required things (virtualenv, `node_modules`, build output, `.env` copies, generated code) are
    missing and the first test or build run will fail.
    - Find the project's own instruction first: a "worktree" / "setup" section in `AGENTS.md`, `CLAUDE.md` or
-     `README.md`, or a script it names (for example a `copy-venv` script). Follow it exactly and run any script it
-     names.
+     `README.md`, or a script it names (for example a `copy-venv` script). Follow it exactly and run the setup script
+     it names.
    - If nothing is documented, do the equivalent yourself: prefer copying from the main checkout when the lockfile is
      identical, otherwise reinstall from the lockfile (`uv sync`, `npm ci`, `pnpm i --frozen-lockfile`,
      `bundle install`, `swift package resolve`, ...). Python venvs hold absolute paths (shebangs, editable `.pth`), so a
@@ -42,8 +52,8 @@ entry of `git worktree list`; a **linked worktree** is any other.
 
 Commit the task's work on the worktree branch. Review `git status` and `git diff`, update any memory or notes file the
 project requires, stage only the task's files (never secrets, never `git add .`, keep unrelated staged work as it was),
-and commit with a why-focused message in the repo's style. Do not push unless the user asked (`git push -u origin HEAD`
-if there is no upstream).
+and commit with a why-focused message in the repo's style. Do not push unless the user asked; if the branch has no
+upstream yet, that first push sets it (`-u origin HEAD`).
 
 ## Apply
 
@@ -74,6 +84,42 @@ if there is no upstream).
    Never delete the parent branch, `main`, `master`, `develop` or a long-lived branch.
 4. An editor or terminal may keep the folder locked ("Permission denied", "directory not empty"). Success is: gone from
    `git worktree list` and the branch deleted. Report a leftover folder in one line; do not kill processes or retry.
+
+## Examples
+
+"Fix the login bug in a new worktree", in Claude Code from branch `feature/auth`:
+
+```bash
+git worktree add -b worktree-fix-login-bug .claude/worktrees/fix-login-bug        # Create
+git config branch.worktree-fix-login-bug.worktreeParent feature/auth
+# ...set up the environment, work, then Save: commit on worktree-fix-login-bug
+git -C <checkout of feature/auth> merge worktree-fix-login-bug                    # Apply
+git worktree remove .claude/worktrees/fix-login-bug && git worktree prune          # Delete, after the user agrees
+git branch -d worktree-fix-login-bug
+```
+
+## Requirements
+
+- `git` 2.22 or later (`git worktree`, `git branch --show-current`), run inside a repository.
+- The project's own setup commands (package manager, lockfile) for the environment step.
+- Optional: Claude Code's `EnterWorktree` / `ExitWorktree` tools; plain `git` and `cd` work everywhere else.
+
+## Limitations
+
+- A new worktree holds only tracked files; ignored and untracked files must be rebuilt or copied by the setup step.
+- Git lets a branch be checked out in only one worktree, so Apply merges where the parent branch is checked out.
+- The parent branch is stored in the repository's local git config, not in the branch, so other clones do not see it.
+- Never pushes, opens pull requests or deletes anything on its own.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Tests or imports fail right after Create | Dependencies missing, or a copied venv still points at the main checkout | Re-run Create step 4 and verify from the worktree's own sources |
+| `git worktree add` says the branch already exists or is checked out | An earlier worktree used the same slug | Reuse that worktree, or ask before choosing a new slug |
+| Apply cannot find the parent branch | `worktreeParent` not recorded, or the parent is checked out nowhere | Ask which branch and checkout to use; never assume `main` |
+| `git branch -d` says "not fully merged" | The worktree branch has commits the parent lacks | Suggest Apply first; use `-D` only after the user confirms |
+| "Permission denied" or "directory not empty" on Delete | An editor or terminal still holds the folder | Report the leftover folder; do not kill processes |
 
 ## Rules
 

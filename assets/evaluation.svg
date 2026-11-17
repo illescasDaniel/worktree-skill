@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="310" viewBox="0 0 920 310" role="img" aria-labelledby="title desc">
+<title id="title">worktree SkillEvaluator quality A, 97.0 out of 100</title><desc id="desc">worktree static quality 97.0; correctness 95, discoverability 95, reliability 100, efficiency 100. Security low risk, caution. See evaluation for limits.</desc>
+<rect x="1" y="1" width="918" height="308" rx="24" fill="#f4f8f5" stroke="#c4dbcf" stroke-width="2"/>
+<text x="32" y="42" fill="#41695b" font-family="Arial,sans-serif" font-size="15" font-weight="bold" letter-spacing="1.5">NVIDIA SKILLEVALUATOR · WORKTREE</text>
+<text x="32" y="91" fill="#143b32" font-family="Arial,sans-serif" font-size="35" font-weight="bold">A  ·  97.0 / 100 quality</text>
+<text x="32" y="121" fill="#4c6b60" font-family="Arial,sans-serif" font-size="15">Static quality · 0.9.0 · 17 Nov 2026 · evaluated working tree</text>
+<g font-family="Arial,sans-serif" font-size="16" fill="#214b3f" font-weight="bold"><text x="32" y="169">Correctness</text><text x="252" y="169">Discoverability</text><text x="472" y="169">Reliability</text><text x="692" y="169">Efficiency</text></g>
+<g fill="#d5e8dc"><rect x="32" y="183" width="190" height="8" rx="4"/><rect x="252" y="183" width="190" height="8" rx="4"/><rect x="472" y="183" width="190" height="8" rx="4"/><rect x="692" y="183" width="190" height="8" rx="4"/></g>
+<g font-family="Arial,sans-serif" font-size="21" fill="#54766a" font-weight="bold"><text x="32" y="224">95</text><text x="252" y="224">95</text><text x="472" y="224">100</text><text x="692" y="224">100</text></g>
+<path d="M32 245h856" stroke="#cfdfd5"/><text x="32" y="274" fill="#4c6b60" font-family="Arial,sans-serif" font-size="15">SkillSpector: low risk (6) · caution · see evaluation details</text></svg>
